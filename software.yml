@@ -1,0 +1,43 @@
+---
+- hosts: localhost
+  connection: local
+  become: true
+  tasks:
+
+  - name: Add Mozilla gpg key
+    ansible.builtin.apt_key:
+      url: https://packages.mozilla.org/apt/repo-signing-key.gpg
+      state: present
+      
+  - name: Add Mozilla repository
+    apt_repository:
+      repo: deb [arch=amd64] https://packages.mozilla.org/apt mozilla main
+
+  - name: Add VSCode gpg key
+    ansible.builtin.apt_key:
+      url: https://packages.microsoft.com/keys/microsoft.asc
+      state: present
+  - name: Add VSCode repository
+    apt_repository:
+      repo: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
+
+  - name: Install apt packages
+    ansible.builtin.apt:
+      state: present
+      update_cache: true
+      name:
+      - zsh
+      - htop
+      - tree
+      - neofetch
+      - cifs-utils
+      - code
+      - pipx
+      - python3-pip
+      - python3-psutil
+      - firefox
+      - keepassxc
+
+  - name: Install Obsidian
+    ansible.builtin.apt:
+      deb: "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.5.12/obsidian_1.5.12_amd64.deb"

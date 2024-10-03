@@ -1,0 +1,109 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+
+  - name: Mount NAS coding share
+    become: true
+    ansible.posix.mount:
+      src: //10.1.1.111/coding
+      path: /mnt/nas/coding
+      opts: "uid=1000,gid=1000,credentials=/home/rick/.nas-creds"
+      fstype: cifs
+      state: mounted
+    ignore_errors: true
+
+  - name: Screen timeout 30min
+    dconf:
+      key: /org/gnome/desktop/session/idle-delay
+      value: "uint32 1800"
+
+  - name: Sleep never
+    dconf:
+      key: /org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-type
+      value: "'nothing'"
+
+  - name: Terminal colors
+    dconf:
+      key: /org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9/palette
+      value: "['rgb(23,20,33)', 'rgb(192,28,40)', 'rgb(38,162,105)', 'rgb(162,115,76)', 'rgb(42,99,171)', 'rgb(163,71,186)', 'rgb(42,161,179)', 'rgb(208,207,204)', 'rgb(94,92,100)', 'rgb(246,97,81)', 'rgb(51,209,122)', 'rgb(233,173,12)', 'rgb(60,147,255)', 'rgb(192,97,203)', 'rgb(51,199,222)', 'rgb(255,255,255)']"
+
+  - name: Terminal Foreground
+    dconf:
+      key: /org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9/foreground-color
+      value: "'rgb(211,215,207)'"
+      
+  - name: Terminal Background
+    dconf:
+      key: /org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9/background-color
+      value: "'rgb(46,52,54)'"
+
+  - name: Terminal scrollback lines
+    dconf:
+      key: /org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9/scrollback-lines
+      value: "100000"
+
+  - name: Terminal new tab key
+    dconf:
+      key: /org/gnome/terminal/legacy/keybindings/new-tab
+      value: "'<Primary>t'"
+
+  - name: Workspaces on all monitors
+    dconf:
+      key: /org/gnome/mutter/workspaces-only-on-primary
+      value: "false"
+
+  - name: Workspaces isolate
+    dconf:
+      key: /org/gnome/shell/extensions/dash-to-panel/isolate-workspaces
+      value: "true"
+
+  - name: Workspaces isolate for task switcher
+    dconf:
+      key: /org/gnome/shell/app-switcher/current-workspace-only
+      value: "true"
+
+  - name: Prefer Dark
+    dconf:
+      key: /org/gnome/desktop/interface/color-scheme
+      value: "'prefer-dark'"
+
+  - name: Window Theme
+    dconf:
+      key: /org/gnome/desktop/interface/gtk-theme
+      value: "'Adwaita-dark'"
+      
+  - name: Titlebar buttons
+    dconf:
+      key: /org/gnome/desktop/wm/preferences/button-layout
+      value: "'appmenu:minimize,maximize,close'"
+
+  - name: Weather
+    dconf:
+      key: /org/gnome/shell/weather/locations
+      value: "[<(uint32 2, <('Corvallis', 'KCVO', true, [(0.77667151713747673, -2.1517000736825782)], [(0.77779840642231934, -2.1513285105381215)])>)>]"
+
+  - name: Weather 2
+    dconf:
+      key: /org/gnome/Weather/locations
+      value: "[<(uint32 2, <('Corvallis', 'KCVO', true, [(0.77667151713747673, -2.1517000736825782)], [(0.77779840642231934, -2.1513285105381215)])>)>]"
+
+
+# Font section from: https://dev.to/waylonwalker/installing-system-nerd-fonts-with-ansible-35kh
+  - name: ensure fonts directory
+    file:
+      path: "{{ lookup('env', 'HOME') }}/.fonts"
+      state: directory
+
+  - name: Hack font exists
+    shell: "ls {{ lookup('env', 'HOME') }}/.fonts/Hack*Nerd*Font*Complete*"
+    register: hack_exists
+    ignore_errors: true
+
+  - name: Download Hack font
+    when: hack_exists is failed
+    ansible.builtin.unarchive:
+      src: https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Hack.zip
+      dest: "{{ lookup('env', 'HOME') }}/.fonts/"
+      remote_src: true
+
