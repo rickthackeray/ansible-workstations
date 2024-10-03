@@ -21,6 +21,14 @@
     apt_repository:
       repo: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
 
+  - name: Add Github gpg key
+    ansible.builtin.apt_key:
+      url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+      state: present
+  - name: Add Github repository
+    apt_repository:
+      repo: deb [arch=amd64] https://cli.github.com/packages stable main
+
   - name: Install apt packages
     ansible.builtin.apt:
       state: present
@@ -31,13 +39,29 @@
       - tree
       - neofetch
       - cifs-utils
+      - xclip
       - code
       - pipx
       - python3-pip
       - python3-psutil
       - firefox
       - keepassxc
+      - gh
+      - wireguard
 
   - name: Install Obsidian
     ansible.builtin.apt:
-      deb: "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.5.12/obsidian_1.5.12_amd64.deb"
+      deb: "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.7/obsidian_1.6.7_amd64.deb"
+
+
+
+# possible way to get latest Obsidian binary automatically
+# - uri:                                                               
+#       url: https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest
+#       return_content: true                                             
+#     register: json_reponse                                             
+
+#   - get_url:                                                           
+#       url: "{{ json_reponse.json.tarball_url }}"                       
+#       dest: ./ansible-latest.tar.gz       
+  
