@@ -8,7 +8,6 @@
     ansible.builtin.apt_key:
       url: https://packages.mozilla.org/apt/repo-signing-key.gpg
       state: present
-      
   - name: Add Mozilla repository
     apt_repository:
       repo: deb [arch=amd64] https://packages.mozilla.org/apt mozilla main
@@ -49,19 +48,17 @@
       - gh
       - wireguard
 
+  - name: Get Obsidian Releases
+    ansible.builtin.uri:
+      url: https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest
+      return_content: true
+    register: json_response
+
   - name: Install Obsidian
     ansible.builtin.apt:
-      deb: "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.7/obsidian_1.6.7_amd64.deb"
-
-
-
-# possible way to get latest Obsidian binary automatically
-# - uri:                                                               
-#       url: https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest
-#       return_content: true                                             
-#     register: json_reponse                                             
-
-#   - get_url:                                                           
-#       url: "{{ json_reponse.json.tarball_url }}"                       
-#       dest: ./ansible-latest.tar.gz       
-  
+      deb: "{{ item.browser_download_url }}"
+    loop_control:
+      label: "{{ item.browser_download_url }}"
+    loop: "{{ json_response.json.assets }}"
+    when: item.browser_download_url is search("amd64.deb")
+    register: download_url
